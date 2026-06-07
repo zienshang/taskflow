@@ -4,7 +4,7 @@ Hệ thống quản lý công việc tuyển dụng nội bộ.
 Admin giao task, HR nộp CV, theo dõi hoa hồng & hỗ trợ qua ticket.
 
 <p align="center">
-  <img src="screenshots/dashboard.svg" alt="Dashboard" width="800">
+  <img src="screenshots/dashboard.png" alt="Dashboard" width="800">
 </p>
 
 ## Tính năng
@@ -39,11 +39,11 @@ Mở `http://localhost:8000` — tài khoản **admin** được tạo tự đ�
 
 ## Screenshots
 
-| Dashboard | Quản lý CV |
-|---|---|
-| ![Dashboard](screenshots/dashboard.svg) | ![CVs](screenshots/cvs.svg) |
-| **Login** | |
-| ![Login](screenshots/login.svg) | |
+| Dashboard | Login |
+|---|---|---|
+| ![Dashboard](screenshots/dashboard.png) | ![Login](screenshots/login.png) |
+| **Drop Task** | **Ticket** |
+| ![Drop Task](screenshots/droptask.png) | ![Ticket](screenshots/ticket.png) |
 
 ## Cấu trúc
 
