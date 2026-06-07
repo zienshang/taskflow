@@ -58,5 +58,3 @@ Mở `http://localhost:8000` — tài khoản **admin** được tạo tự đ�
     ├── Dockerfile
     └── docker-compose.yml
 ```
-
-> Chi tiết: [taskflow/README.md](taskflow/README.md)
