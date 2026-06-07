@@ -107,9 +107,3 @@ Mở **http://localhost:8000** — tài khoản **admin** được tạo tự đ
     ├── Dockerfile
     └── docker-compose.yml
 ```
-
----
-
-<div align="center">
-  <sub>Built with ❤️ by the TaskFlow team</sub>
-</div>
