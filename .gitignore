@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+
+# Rate limiter persistent store (runtime data, không commit)
+taskflow/rate_limit.db
+taskflow/rate_limit.db-shm
+taskflow/rate_limit.db-wal
+
+# Node build
+node_modules/
+package-lock.json
+taskflow/static_prod/
+
+# Uploads: chỉ bỏ qua file thực, giữ lại .gitkeep để preserve cấu trúc thư mục
+taskflow/uploads/*.pdf
+taskflow/uploads/*.doc
+taskflow/uploads/*.docx
+taskflow/uploads/**/*.pdf
+taskflow/uploads/**/*.doc
+taskflow/uploads/**/*.docx
+taskflow/uploads/**/*.jpg
+taskflow/uploads/**/*.jpeg
+taskflow/uploads/**/*.png
+taskflow/uploads/**/*.webp
+taskflow/uploads/**/*.txt
+taskflow/uploads/**/*.xlsx
+taskflow/uploads/**/*.xls
+taskflow/uploads/**/*.ppt
+taskflow/uploads/**/*.pptx
+
+# Claude Code local settings
+.claude/
+
+# Thư mục rác (do lỗi terminal)
+taskflow/{routers,models,core}/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

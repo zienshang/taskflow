@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: taskflow-mongo
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: taskflow
+
+  api:
+    build: .
+    container_name: taskflow-api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - SECRET_KEY=change-this-to-a-secure-random-key-in-production
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/app
+
+volumes:
+  mongo_data:

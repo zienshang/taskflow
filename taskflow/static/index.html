@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskFlow — Hệ thống quản lý công việc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/js/protect.js"></script>
+</head>
+<body>
+
+<!-- ══ LOGIN PAGE ══════════════════════════════════════ -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#185FA5"/><path d="M8 12h16M8 16h10M8 20h12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <span class="login-logo-text">TaskFlow</span>
+    </div>
+    <h2>Đăng nhập</h2>
+    <p>Hệ thống quản lý công việc nội bộ</p>
+    <div class="error-msg" id="loginError"></div>
+    <div class="form-group">
+      <label>Tên đăng nhập</label>
+      <input class="input" type="text" id="loginUsername" placeholder="username" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Mật khẩu</label>
+      <input class="input" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary btn-full" id="loginBtn" onclick="doLogin()">Đăng nhập</button>
+  </div>
+</div>
+
+<!-- ══ APP SHELL ════════════════════════════════════════ -->
+<div id="appShell" style="display:none;flex-direction:column">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#185FA5"/><path d="M8 12h16M8 16h10M8 20h12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      TaskFlow
+    </div>
+    <div class="nav-tabs" id="navTabs"></div>
+    <div class="topbar-user">
+      <div style="position:relative">
+        <button id="notifBell" style="background:none;border:none;cursor:pointer;padding:6px 8px;font-size:16px;line-height:1;border-radius:6px;position:relative" onclick="toggleNotifDropdown()" title="Thông báo">🔔<span id="notifBadge" class="notif-badge" style="display:none">0</span></button>
+      </div>
+      <button style="background:none;border:none;cursor:pointer;padding:6px 8px;font-size:16px;line-height:1;border-radius:6px" onclick="showView('settings')" title="Cài đặt">⚙️</button>
+      <div class="avatar" id="topAvatar"></div>
+      <div>
+        <div class="user-name" id="topName"></div>
+        <div class="user-role" id="topRole"></div>
+      </div>
+      <button class="btn" style="padding:6px 10px;font-size:12px" onclick="doLogout()">Đăng xuất</button>
+    </div>
+  </div>
+
+  <!-- Notification dropdown -->
+  <div id="notifDropdown" class="notif-dropdown">
+    <div class="notif-head">
+      <span style="font-size:13px;font-weight:600">Thông báo</span>
+      <button class="btn" style="font-size:11px;padding:3px 8px" onclick="markAllRead()">Đọc tất cả</button>
+    </div>
+    <div class="notif-list" id="notifList">
+      <div class="notif-empty">Không có thông báo</div>
+    </div>
+  </div>
+
+  <!-- Activity sidebar -->
+  <div class="activity-sidebar" id="activitySidebar">
+    <div class="as-header">Tiến độ nhân viên HR</div>
+    <div class="as-list" id="hrSidebarList" style="flex:1;min-height:0"></div>
+  </div>
+
+  <!-- Views -->
+  <div class="main">
+    <div class="change-pw-banner" id="mustChangePwBanner" style="display:none">
+      ⚠️ Tài khoản của bạn cần đổi mật khẩu trước khi sử dụng.
+      <button class="btn btn-sm" style="margin-left:auto" onclick="openChangePassword()">Đổi ngay</button>
+    </div>
+
+    <!-- ADMIN: Dashboard -->
+    <div class="view" id="v-dashboard">
+      <div class="stats-row mb-20" id="statsGrid"></div>
+      <div id="dashboardTicketPanel" style="margin-bottom:16px"></div>
+      <div class="section-head" style="margin-top:20px">
+        <span class="section-title">Danh sách task</span>
+        <button class="btn btn-primary" onclick="openModal('modalTask')" style="font-size:12px;padding:6px 12px">+ Giao task</button>
+      </div>
+      <div class="card"><div class="card-body" id="adminTaskList" style="padding:0"></div></div>
+      <div class="section-head" style="margin-top:20px"><span class="section-title">Hoạt động gần đây</span></div>
+      <div class="card"><div class="card-body act-list" id="actList" style="padding:12px 20px"></div></div>
+    </div>
+
+    <!-- ADMIN: Tổng Task -->
+    <div class="view" id="v-alltasks">
+      <div class="section-head">
+        <span class="section-title">Tổng Task</span>
+        <select id="alltasks-filter" class="input" style="width:160px;padding:5px 10px;font-size:12px" onchange="renderAllTasksTable()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="active">Đang thực hiện</option>
+          <option value="completed">Hoàn tất</option>
+        </select>
+      </div>
+      <div class="card"><div class="card-body" id="allTasksList" style="padding:0"></div></div>
+    </div>
+
+    <!-- ADMIN: Users -->
+    <div class="view" id="v-users">
+      <div class="section-head">
+        <span class="section-title">Quản lý tài khoản</span>
+        <button class="btn btn-primary" onclick="openModal('modalUser')" style="font-size:12px;padding:6px 12px">+ Tạo tài khoản</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="userTable">
+            <thead><tr><th>Tài khoản</th><th>Họ tên</th><th>Vai trò</th><th>Bộ phận</th><th>CV đã nộp</th><th>Task</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody id="userTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN: CVs -->
+    <div class="view" id="v-cvs">
+      <div class="section-head"><span class="section-title">Tất cả CV ứng viên</span></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ứng viên</th><th>Vị trí</th><th>Task</th><th>HR nộp</th><th>Đánh giá</th><th>Trạng thái</th><th>Ghi chú</th><th>Thời gian</th><th></th></tr></thead>
+            <tbody id="cvTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- HR: My Tasks -->
+    <div class="view" id="v-mytasks">
+      <div class="section-head"><span class="section-title">Task của tôi</span></div>
+      <div id="hrTaskCards"></div>
+    </div>
+
+    <!-- HR: My CVs -->
+    <div class="view" id="v-mycvs">
+      <div class="section-head"><span class="section-title">CV đã nộp</span></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ứng viên</th><th>Vị trí</th><th>Mã task</th><th>Task</th><th>Đánh giá</th><th>Ghi chú</th><th>Thời gian</th></tr></thead>
+            <tbody id="myCVTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN/LEADER: Tickets -->
+    <div class="view" id="v-tickets">
+      <div class="section-head">
+        <span class="section-title">Quản lý Ticket</span>
+        <button class="btn btn-primary" onclick="openCreateTicket()" style="font-size:12px;padding:6px 12px">+ Tạo ticket</button>
+      </div>
+      <div class="ticket-stats" id="ticketStatsBar"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <select id="tkt-filter-status" class="input" style="width:150px;padding:5px 10px;font-size:12px" onchange="loadTickets()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="open">Mở</option>
+          <option value="in_progress">Đang xử lý</option>
+          <option value="resolved">Đã giải quyết</option>
+          <option value="closed">Đã đóng</option>
+        </select>
+        <select id="tkt-filter-category" class="input" style="width:170px;padding:5px 10px;font-size:12px" onchange="loadTickets()">
+          <option value="">Tất cả loại</option>
+          <option value="technical">Hỗ trợ kỹ thuật</option>
+          <option value="issue">Báo cáo vấn đề</option>
+          <option value="info_request">Yêu cầu thông tin</option>
+          <option value="feedback">Phản hồi / Góp ý</option>
+        </select>
+        <select id="tkt-filter-priority" class="input" style="width:140px;padding:5px 10px;font-size:12px" onchange="loadTickets()">
+          <option value="">Tất cả ưu tiên</option>
+          <option value="urgent">Khẩn cấp</option>
+          <option value="high">Cao</option>
+          <option value="normal">Bình thường</option>
+          <option value="low">Thấp</option>
+        </select>
+        <select id="tkt-filter-user" class="input" style="width:160px;padding:5px 10px;font-size:12px" onchange="loadTickets()">
+          <option value="">Tất cả người tạo</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--c-muted);cursor:pointer">
+          <input type="checkbox" id="tkt-filter-overdue" onchange="loadTickets()"> Quá hạn
+        </label>
+      </div>
+      <div class="card"><div id="ticketsTableWrap" style="padding:0"></div></div>
+    </div>
+
+    <!-- HR: My Tickets -->
+    <div class="view" id="v-mytickets">
+      <div class="section-head">
+        <span class="section-title">Ticket của tôi</span>
+        <button class="btn btn-primary" onclick="openCreateTicket()" style="font-size:12px;padding:6px 12px">+ Tạo ticket mới</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px" id="myTicketTabs">
+        <button class="ticket-stat-chip active" onclick="filterMyTickets('',this)">Tất cả</button>
+        <button class="ticket-stat-chip" onclick="filterMyTickets('open',this)">Mở</button>
+        <button class="ticket-stat-chip" onclick="filterMyTickets('in_progress',this)">Đang xử lý</button>
+        <button class="ticket-stat-chip" onclick="filterMyTickets('resolved',this)">Đã giải quyết</button>
+        <button class="ticket-stat-chip" onclick="filterMyTickets('closed',this)">Đã đóng</button>
+      </div>
+      <div id="myTicketsWrap"></div>
+    </div>
+
+    <!-- History -->
+    <div class="view" id="v-history">
+      <div class="section-head"><span class="section-title">Lịch sử thanh toán</span></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table><thead id="historyThead"></thead><tbody id="historyTbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs -->
+    <div class="view" id="v-logs">
+      <div class="section-head">
+        <span class="section-title">Nhật ký hoạt động</span>
+        <span id="logs-count" style="font-size:12px;color:var(--c-muted)"></span>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Thời gian</th><th>Hoạt động</th><th>Người thực hiện</th></tr></thead>
+            <tbody id="logsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="view" id="v-settings">
+      <div class="section-head"><span class="section-title">Cài đặt tài khoản</span></div>
+      <div style="max-width:600px">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">Ảnh đại diện</div>
+          <div class="card-body" style="padding:16px 20px">
+            <div style="display:flex;align-items:center;gap:20px">
+              <div style="width:72px;height:72px;border-radius:50%;background:var(--c-gray-bg);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;color:var(--c-muted);overflow:hidden;flex-shrink:0" id="settingsAvatar">?</div>
+              <div>
+                <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+                <button class="btn" onclick="document.getElementById('avatarInput').click()">Chọn ảnh</button>
+                <div style="font-size:11px;color:var(--c-muted);margin-top:4px">JPG, PNG, WEBP. Tối đa 2MB.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">Thông tin nhận tiền</div>
+          <div class="card-body" style="padding:16px 20px">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Ngân hàng</label>
+                <div style="position:relative" id="bankPickerWrap">
+                  <div class="input" id="bankPickerDisplay" style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none" onclick="toggleBankPicker()">
+                    <img id="bankPickerIcon" src="" style="width:28px;height:28px;object-fit:contain;border-radius:5px;border:1px solid var(--c-border);background:#fff;padding:2px;display:none;flex-shrink:0">
+                    <span id="bankPickerText" style="flex:1;color:var(--c-muted)">-- Chọn ngân hàng --</span>
+                    <span style="color:var(--c-muted);font-size:11px">▾</span>
+                  </div>
+                  <input type="hidden" id="s-bank-name">
+                  <div id="bankPickerDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:300;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--radius);box-shadow:var(--shadow-md);max-height:280px;overflow-y:auto"></div>
+                </div>
+              </div>
+              <div class="form-group"><label>Số tài khoản</label><input class="input" id="s-bank-account" placeholder="VD: 1234567890"></div>
+            </div>
+            <div class="form-group"><label>Chủ tài khoản</label><input class="input" id="s-bank-holder" placeholder="VD: NGUYEN VAN A"></div>
+            <div class="form-group" style="margin-top:12px">
+              <label>Mã QR chuyển tiền</label>
+              <div style="display:flex;align-items:center;gap:16px">
+                <div id="s-bank-qr-preview" style="width:80px;height:80px;border-radius:8px;border:1px solid var(--c-border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--c-muted);overflow:hidden;flex-shrink:0">Chưa có</div>
+                <div>
+                  <input type="file" id="bankQrInput" accept="image/*" style="display:none" onchange="uploadBankQr(this)">
+                  <button class="btn" onclick="document.getElementById('bankQrInput').click()">Tải lên</button>
+                  <div style="font-size:11px;color:var(--c-muted);margin-top:4px">JPG, PNG, WEBP. Tối đa 2MB.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">Đổi mật khẩu</div>
+          <div class="card-body" style="padding:16px 20px">
+            <div class="form-group"><label>Mật khẩu cũ</label><input class="input" type="password" id="s-old-pw" placeholder="••••••••"></div>
+            <div class="form-group"><label>Mật khẩu mới</label><input class="input" type="password" id="s-new-pw" placeholder="••••••••"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button class="btn btn-primary" onclick="saveSettings()">Lưu thay đổi</button>
+          <button class="btn" id="s-change-pw-btn" onclick="changePasswordSettings()">Đổi mật khẩu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALS ════════════════════════════════════════════ -->
+
+<!-- Create User -->
+<div class="modal-bg" id="modalUser">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Tạo tài khoản mới</span><button class="modal-close" onclick="closeModal('modalUser')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Tên đăng nhập *</label><input class="input" id="u-username" placeholder="vd: hr.linh"></div>
+        <div class="form-group"><label>Họ và tên *</label><input class="input" id="u-fullname" placeholder="Nguyễn Thị Linh"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Mật khẩu *</label><input class="input" type="password" id="u-password" placeholder="Tối thiểu 6 ký tự"></div>
+        <div class="form-group"><label>Vai trò</label>
+          <select class="input" id="u-role" onchange="onRoleChange(this)">
+            <option value="hr">Nhân viên HR</option>
+            <option value="hr_leader">HR Leader</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Bộ phận</label><input class="input" id="u-dept" value="HR"></div>
+        <div class="form-group"><label>Email</label><input class="input" id="u-email" type="email" placeholder="email@company.com"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modalUser')">Hủy</button><button class="btn btn-primary" onclick="createUser()">Tạo tài khoản</button></div>
+  </div>
+</div>
+
+<!-- Create Task -->
+<div class="modal-bg" id="modalTask">
+  <div class="modal" style="max-width:936px">
+    <div class="modal-header"><span class="modal-title">Giao task mới</span><button class="modal-close" onclick="closeModal('modalTask')">×</button></div>
+    <div class="modal-body" style="display:flex;gap:20px">
+      <div style="flex:0.35;min-width:0">
+        <div class="form-group"><label>Mã task *</label><input class="input" id="t-code" placeholder="VD: HR-2026-001"></div>
+        <div class="form-group"><label>Tiêu đề task *</label><input class="input" id="t-title" placeholder="VD: Tuyển dụng Senior Developer"></div>
+        <div class="form-group"><label>Giao cho (HR) *</label><select class="input" id="t-assign"></select></div>
+        <div class="form-group">
+          <label>Tệp đính kèm *</label>
+          <input class="input" type="file" id="t-file" style="padding:8px 12px">
+          <div style="font-size:12px;color:var(--c-muted);margin-top:4px">Hỗ trợ .docx, .pdf, .txt, .xlsx...</div>
+        </div>
+        <div class="form-group">
+          <label>Tiền hoa hồng *</label>
+          <div style="position:relative">
+            <input class="input" id="t-commission" placeholder="VD: 5.000.000" style="font-weight:600;color:var(--c-green);padding-right:46px" oninput="fmtCurrencyInput(this)">
+            <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;color:var(--c-muted);pointer-events:none">VND</span>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+        <div class="form-group" style="flex:1;display:flex;flex-direction:column">
+          <label>Nội dung / Yêu cầu *</label>
+          <div style="border:1px solid var(--c-border-md);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;flex:1">
+            <div style="display:flex;gap:2px;padding:6px 8px;border-bottom:1px solid var(--c-border);background:var(--c-gray-bg)">
+              <button class="btn" style="font-size:12px;padding:2px 8px;font-weight:700" onclick="execFmtCreate('bold')" type="button"><b>B</b></button>
+              <button class="btn" style="font-size:12px;padding:2px 8px;font-style:italic" onclick="execFmtCreate('italic')" type="button"><i>I</i></button>
+              <button class="btn" style="font-size:12px;padding:2px 8px;text-decoration:underline" onclick="execFmtCreate('underline')" type="button"><u>U</u></button>
+              <span style="width:1px;height:18px;background:var(--c-border);margin:0 4px"></span>
+              <button class="btn" style="font-size:12px;padding:2px 8px" onclick="execFmtCreate('insertUnorderedList')" type="button">•</button>
+              <button class="btn" style="font-size:12px;padding:2px 8px" onclick="execFmtCreate('insertOrderedList')" type="button">1.</button>
+            </div>
+            <div id="t-desc" contenteditable="true" onpaste="cleanPaste(event)" onmousedown="onContentMouseDown(event)" style="flex:1;min-height:380px;padding:12px 12px 12px 28px;line-height:1.8;outline:none;font-size:14px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modalTask')">Hủy</button><button class="btn btn-primary" onclick="createTask()">Giao task</button></div>
+  </div>
+</div>
+
+<!-- Submit CV -->
+<div class="modal-bg" id="modalCV">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Nộp CV ứng viên</span><button class="modal-close" onclick="closeModal('modalCV')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Task liên quan *</label><select class="input" id="cv-task"></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>Tên ứng viên *</label><input class="input" id="cv-name" placeholder="Họ và tên ứng viên"></div>
+        <div class="form-group"><label>Vị trí ứng tuyển *</label><input class="input" id="cv-pos" placeholder="Senior Developer"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Đánh giá</label>
+          <select class="input" id="cv-rating">
+            <option value="good">✅ Phù hợp tốt</option><option value="potential">⭐ Tiềm năng</option>
+            <option value="average">➖ Trung bình</option><option value="no">❌ Không phù hợp</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Liên hệ</label><input class="input" id="cv-contact" placeholder="SĐT / Email"></div>
+      </div>
+      <div class="form-group"><label>Ghi chú</label><textarea class="input" id="cv-note" rows="2" placeholder="Nhận xét về ứng viên..."></textarea></div>
+      <div class="form-group">
+        <label>File CV</label><input class="input" type="file" id="cv-file" style="padding:8px 12px">
+        <div style="font-size:12px;color:var(--c-muted);margin-top:4px">Hỗ trợ .pdf, .docx, .txt...</div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modalCV')">Hủy</button><button class="btn btn-primary" onclick="submitCV()">Nộp CV</button></div>
+  </div>
+</div>
+
+<!-- Reset Password -->
+<div class="modal-bg" id="modalResetPw">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Reset mật khẩu</span><button class="modal-close" onclick="closeModal('modalResetPw')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--c-muted);margin-bottom:14px">Reset mật khẩu cho: <strong id="resetPwTarget"></strong></p>
+      <div class="form-group"><label>Mật khẩu mới *</label><input class="input" type="password" id="resetPwVal" placeholder="Tối thiểu 6 ký tự"></div>
+      <p style="font-size:12px;color:var(--c-amber)">⚠️ Người dùng sẽ cần đổi mật khẩu khi đăng nhập lần tiếp theo.</p>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modalResetPw')">Hủy</button><button class="btn btn-primary" onclick="confirmResetPw()">Xác nhận reset</button></div>
+  </div>
+</div>
+
+<!-- Change Password -->
+<div class="modal-bg" id="modalChangePw">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Đổi mật khẩu</span><button class="modal-close" onclick="closeModal('modalChangePw')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Mật khẩu cũ *</label><input class="input" type="password" id="cp-old" placeholder="Mật khẩu hiện tại"></div>
+      <div class="form-group"><label>Mật khẩu mới *</label><input class="input" type="password" id="cp-new" placeholder="Tối thiểu 6 ký tự"></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modalChangePw')">Hủy</button><button class="btn btn-primary" onclick="doChangePassword()">Đổi mật khẩu</button></div>
+  </div>
+</div>
+
+<!-- Task Detail -->
+<div class="modal-bg" id="modalTaskDetail">
+  <div class="modal" style="max-width:1000px">
+    <div class="modal-header"><span class="modal-title" id="td-title">Chi tiết task</span><button class="modal-close" onclick="closeModal('modalTaskDetail')">×</button></div>
+    <div class="modal-body" id="td-body"></div>
+    <div class="modal-footer" id="td-footer"><button class="btn" onclick="closeModal('modalTaskDetail')">Đóng</button></div>
+  </div>
+</div>
+
+<!-- HR: Yêu cầu thanh toán -->
+<div class="modal-bg" id="modalRequestCompletion">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><span class="modal-title">Yêu cầu thanh toán hoa hồng</span><button class="modal-close" onclick="closeModal('modalRequestCompletion')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--c-muted);margin-bottom:14px">Admin sẽ nhận thông báo và xem xét yêu cầu của bạn.</p>
+      <div class="form-group">
+        <label>Chọn nhanh</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <button type="button" class="btn req-chip" style="font-size:11px;padding:4px 10px;border-radius:20px" onclick="setReqNote(this,'Ứng viên đã ký hợp đồng và bắt đầu làm việc.')">✅ Đã ký hợp đồng</button>
+          <button type="button" class="btn req-chip" style="font-size:11px;padding:4px 10px;border-radius:20px" onclick="setReqNote(this,'Ứng viên đã hoàn thành thời gian thử việc thành công.')">🎯 Xong thử việc</button>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0"><label>Ghi chú</label><textarea class="input" id="req-note" rows="2" placeholder="Hoặc nhập thêm ghi chú..."></textarea></div>
+      <div id="req-cv-info" style="font-size:12px;color:var(--c-muted);background:var(--c-bg);padding:8px 10px;border-radius:var(--radius);margin-top:10px"></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modalRequestCompletion')">Hủy</button><button class="btn btn-primary" onclick="submitCompletionRequest()">Gửi yêu cầu</button></div>
+  </div>
+</div>
+
+<!-- HR: Task completed -->
+<div class="modal-bg" id="modalTaskCompleted">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header" style="background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border-bottom-color:#6EE7B7;padding:18px 24px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;background:#10B981;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎉</div>
+        <div><div class="modal-title" style="color:#065F46;font-size:16px">Task đã hoàn thành!</div><div style="font-size:12px;color:#047857;margin-top:2px">Ứng viên đã ký hợp đồng thành công!</div></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalTaskCompleted')" style="color:#065F46">×</button>
+    </div>
+    <div class="modal-body" style="padding:24px">
+      <div style="background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:10px;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Task</div>
+        <div id="ctask-name" style="font-size:14px;font-weight:600;color:var(--c-text);line-height:1.4"></div>
+      </div>
+      <div id="ctask-commission-box" style="background:var(--c-green-bg);border:1px solid #A7F3D0;border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13px;color:var(--c-green);font-weight:500">💰 Hoa hồng của bạn</div>
+        <div id="ctask-commission" style="font-size:20px;font-weight:700;color:var(--c-green)">—</div>
+      </div>
+      <p style="font-size:13px;color:var(--c-muted);text-align:center;line-height:1.6">Bạn có thể yêu cầu HR Leader chuyển hoa hồng ngay bây giờ<br>hoặc thực hiện sau trong danh sách task.</p>
+    </div>
+    <div class="modal-footer" style="padding:16px 24px;gap:10px">
+      <button class="btn" onclick="closeModal('modalTaskCompleted')">Để sau</button>
+      <button class="btn btn-success" style="font-size:13px;padding:9px 20px;font-weight:600" onclick="closeModal('modalTaskCompleted');openRequestCompletion(_completedTaskId)">🏁 Yêu cầu thanh toán hoa hồng</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin: Approve payment -->
+<div class="modal-bg" id="modalApprovePayment">
+  <div class="modal" style="max-width:1200px">
+    <div class="modal-header">
+      <div><div class="modal-title">Xác nhận chuyển khoản</div><div style="font-size:12px;color:var(--c-muted);margin-top:2px" id="apay-subtitle"></div></div>
+      <button class="modal-close" onclick="closeModal('modalApprovePayment')">×</button>
+    </div>
+    <div class="modal-body" style="display:flex;gap:20px;align-items:flex-start">
+      <div style="width:210px;flex-shrink:0;background:var(--c-bg);border-radius:var(--radius);padding:14px;border:1px solid var(--c-border)">
+        <div style="font-size:11px;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px">Tài khoản nhận tiền của HR</div>
+        <div id="apay-hr-bank"><div style="text-align:center;color:var(--c-muted);font-size:12px;padding:12px 0">Chưa có thông tin</div></div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div id="apay-hr-note" style="display:none;font-size:12px;background:var(--c-blue-bg);padding:8px 10px;border-radius:var(--radius);margin-bottom:14px;color:var(--c-blue)"></div>
+        <div class="form-group"><label>Số tiền thanh toán</label>
+          <div style="position:relative"><input class="input" id="apay-amount" readonly style="font-weight:700;color:var(--c-green);padding-right:46px;background:var(--c-bg);cursor:not-allowed"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;color:var(--c-muted);pointer-events:none">VND</span></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Tên ngân hàng *</label><input class="input" id="apay-bank" placeholder="VD: Vietcombank"></div>
+          <div class="form-group"><label>Số tài khoản *</label><input class="input" id="apay-account" placeholder="1234567890" style="font-family:monospace"></div>
+        </div>
+        <div class="form-group"><label>Chủ tài khoản *</label><input class="input" id="apay-holder" placeholder="NGUYEN VAN A" style="text-transform:uppercase"></div>
+        <div class="form-group">
+          <label>Nội dung chuyển khoản</label>
+          <input class="input" id="apay-content" placeholder="VD: Hoa hong TDC00328 thang 6">
+          <div style="font-size:11px;color:var(--c-amber);margin-top:5px">⚠️ Nội dung phải <strong>trùng khớp</strong> với nội dung CK thực tế và <strong>có mã task</strong></div>
+        </div>
+        <div class="form-group" style="margin-bottom:0"><label>Ghi chú nội bộ</label><input class="input" id="apay-note" placeholder="Ghi chú (không gửi cho HR)"></div>
+      </div>
+      <div style="width:480px;flex-shrink:0">
+        <div style="font-size:12px;font-weight:500;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Ảnh chuyển khoản *</div>
+        <input type="file" id="apay-image" accept="image/*" style="display:none" onchange="previewTransferImage(this)">
+        <div id="apay-drop-zone" style="border:2px dashed var(--c-border-md);border-radius:var(--radius);cursor:pointer;transition:border-color .15s,background .15s;overflow:hidden;height:100%;min-height:460px;display:flex;flex-direction:column"
+          onclick="document.getElementById('apay-image').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--c-blue)';this.style.background='var(--c-blue-light)'"
+          ondragleave="this.style.borderColor='var(--c-border-md)';this.style.background=''"
+          ondrop="handleTransferDrop(event)">
+          <div id="apay-drop-placeholder" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;color:var(--c-muted)">
+            <div style="font-size:36px;margin-bottom:10px">🖼️</div>
+            <div style="font-size:13px;font-weight:500;color:var(--c-text);text-align:center">Kéo thả hoặc click để chọn ảnh</div>
+            <div style="font-size:11px;margin-top:6px;text-align:center">JPG, PNG, WEBP</div>
+          </div>
+          <div id="apay-image-container" style="display:none;position:relative;flex:1">
+            <img id="apay-image-preview-img" style="width:100%;height:100%;object-fit:contain;display:block">
+            <button type="button" onclick="event.stopPropagation();clearTransferImage()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modalApprovePayment')">Hủy</button><button class="btn btn-primary" onclick="submitApprovePayment()">✅ Xác nhận đã chuyển</button></div>
+  </div>
+</div>
+
+<!-- Admin: Reject payment -->
+<div class="modal-bg" id="modalRejectPayment">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header"><span class="modal-title">Từ chối yêu cầu</span><button class="modal-close" onclick="closeModal('modalRejectPayment')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--c-muted);margin-bottom:14px">HR sẽ nhận thông báo và có thể gửi lại yêu cầu.</p>
+      <div class="form-group"><label>Lý do từ chối *</label><textarea class="input" id="rej-reason" rows="3" placeholder="VD: Chưa đủ CV chất lượng..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modalRejectPayment')">Hủy</button><button class="btn btn-danger" onclick="submitRejectPayment()">Từ chối</button></div>
+  </div>
+</div>
+
+<!-- HR: Confirm payment -->
+<div class="modal-bg" id="modalPaymentDetail">
+  <div class="modal" style="max-width:1100px">
+    <div class="modal-header"><span class="modal-title">Xác nhận đã nhận tiền hoa hồng</span><button class="modal-close" onclick="closeModal('modalPaymentDetail')">×</button></div>
+    <div class="modal-body" style="display:flex;gap:20px;align-items:center">
+      <div style="flex:1;min-width:0" id="cpay-body"></div>
+      <div style="width:320px;flex-shrink:0">
+        <div style="font-size:11px;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Ảnh chuyển khoản từ Admin</div>
+        <div id="cpay-admin-image" style="border:1px solid var(--c-border);border-radius:var(--radius);min-height:320px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--c-bg)"><span style="color:var(--c-muted);font-size:12px">Không có ảnh</span></div>
+      </div>
+      <div style="width:320px;flex-shrink:0">
+        <div style="font-size:11px;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Ảnh xác nhận nhận tiền *</div>
+        <input type="file" id="cpay-image" accept="image/*" style="display:none" onchange="previewHRConfirmImage(this)">
+        <div id="cpay-drop-zone" style="border:2px dashed var(--c-border-md);border-radius:var(--radius);cursor:pointer;transition:border-color .15s,background .15s;overflow:hidden;min-height:320px;display:flex;flex-direction:column"
+          onclick="document.getElementById('cpay-image').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--c-blue)';this.style.background='var(--c-blue-light)'"
+          ondragleave="this.style.borderColor='var(--c-border-md)';this.style.background=''"
+          ondrop="handleHRConfirmDrop(event)">
+          <div id="cpay-drop-placeholder" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;color:var(--c-muted)">
+            <div style="font-size:36px;margin-bottom:10px">📱</div>
+            <div style="font-size:13px;font-weight:500;color:var(--c-text);text-align:center">Kéo thả hoặc click để chọn ảnh</div>
+          </div>
+          <div id="cpay-image-container" style="display:none;position:relative;flex:1">
+            <img id="cpay-image-preview-img" style="width:100%;height:100%;object-fit:contain;display:block">
+            <button type="button" onclick="event.stopPropagation();clearHRConfirmImage()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--c-muted);margin-top:8px;text-align:center">Vui lòng thêm hình ảnh thông báo đã nhận tiền!</div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-success" id="cpay-confirm-btn" onclick="confirmPaymentReceipt()" disabled style="opacity:.5;cursor:not-allowed">✅ Xác nhận đã nhận tiền</button></div>
+  </div>
+</div>
+
+<!-- Admin: Trial expired -->
+<div class="modal-bg" id="modalTrialExpired">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A);border-bottom-color:#F59E0B;padding:18px 24px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;background:#F59E0B;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">⏰</div>
+        <div><div class="modal-title" style="color:#78350F;font-size:16px">Thời gian thử việc đã kết thúc</div><div style="font-size:12px;color:#92400E;margin-top:2px">Cần xác nhận ứng viên đã ký hợp đồng</div></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalTrialExpired')" style="color:#78350F">×</button>
+    </div>
+    <div class="modal-body" style="padding:24px">
+      <div style="background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:10px;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Task</div>
+        <div id="trial-task-name" style="font-size:14px;font-weight:600;color:var(--c-text)"></div>
+        <div id="trial-task-hr" style="font-size:12px;color:var(--c-muted);margin-top:3px"></div>
+      </div>
+      <div style="background:var(--c-amber-bg);border:1px solid #FCD34D;border-radius:var(--radius);padding:12px 14px">
+        <div style="font-size:13px;color:#92400E;line-height:1.6">Ứng viên đã hoàn thành <strong>2 tháng thử việc</strong>.<br>Vui lòng xác nhận xem ứng viên có thực sự <strong>ký hợp đồng chính thức</strong> không.</div>
+      </div>
+    </div>
+    <div class="modal-footer" style="padding:16px 24px;gap:10px">
+      <button class="btn" onclick="closeModal('modalTrialExpired')">Để sau</button>
+      <button class="btn btn-success" style="font-size:13px;padding:9px 20px;font-weight:600" onclick="closeModal('modalTrialExpired');confirmTrialCompletion(_trialExpiredTaskId)">✅ Xác nhận đã ký hợp đồng</button>
+    </div>
+  </div>
+</div>
+
+<!-- HR: Pending payment block -->
+<div class="modal-bg" id="modalPendingPayment">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A);border-bottom-color:#F59E0B;padding:18px 24px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:42px;height:42px;background:#F59E0B;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🔒</div>
+        <div><div class="modal-title" style="color:#78350F;font-size:16px">Xác nhận thanh toán hoa hồng</div><div style="font-size:12px;color:#92400E;margin-top:2px">Bạn có một khoản hoa hồng đang chờ xác nhận</div></div>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:24px">
+      <div style="display:flex;align-items:center;gap:12px;background:var(--c-green-bg);border:1px solid #A7F3D0;border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:20px">
+        <span style="font-size:28px;flex-shrink:0">💸</span>
+        <div><div style="font-size:14px;font-weight:600;color:var(--c-green)">Admin đã chuyển tiền hoa hồng cho bạn!</div><div style="font-size:12px;color:var(--c-muted);margin-top:2px">Vui lòng xác nhận để tiếp tục sử dụng hệ thống.</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:stretch;margin-bottom:20px">
+        <div style="background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--radius);padding:14px 16px">
+          <div style="font-size:10px;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Task</div>
+          <div id="pendingPayTaskName" style="font-size:14px;font-weight:600;color:var(--c-text);line-height:1.4"></div>
+        </div>
+        <div id="pendingPayAmountBox" style="background:var(--c-green-bg);border:1px solid #A7F3D0;border-radius:var(--radius);padding:14px 20px;text-align:center;display:flex;flex-direction:column;justify-content:center;min-width:140px">
+          <div style="font-size:10px;font-weight:600;color:var(--c-green);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Hoa hồng</div>
+          <div id="pendingPayAmount" style="font-size:20px;font-weight:700;color:var(--c-green);white-space:nowrap">—</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;background:var(--c-red-bg);border:1px solid #FECACA;border-radius:var(--radius);padding:12px 14px">
+        <span style="font-size:16px;flex-shrink:0;margin-top:1px">⚠️</span>
+        <p style="font-size:12px;color:var(--c-red);line-height:1.5">Bạn <strong>không thể nộp CV hoặc nhận task mới</strong> cho đến khi hoàn tất xác nhận khoản hoa hồng này.</p>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:flex-end;gap:10px;padding:16px 24px">
+      <button class="btn btn-success" id="pendingPayConfirmBtn" onclick="confirmFromBlockModal()" style="padding:10px 22px;font-size:14px;font-weight:600">✅ Xác nhận đã nhận tiền ngay</button>
+    </div>
+  </div>
+</div>
+
+<!-- HR Payment Info -->
+<div class="modal-bg" id="modalHRPayment">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <div><div class="modal-title" id="hrpay-name">Thông tin chuyển tiền</div><div style="font-size:11px;color:var(--c-muted);margin-top:2px" id="hrpay-username"></div></div>
+      <button class="modal-close" onclick="closeModal('modalHRPayment')">×</button>
+    </div>
+    <div class="modal-body" id="hrpay-body"></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modalHRPayment')">Đóng</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal: Tạo ticket -->
+<div class="modal-bg" id="modalCreateTicket">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <span class="modal-title">Tạo ticket mới</span>
+      <button class="modal-close" onclick="closeModal('modalCreateTicket')">×</button>
+    </div>
+    <div class="modal-body" style="display:flex;gap:20px">
+      <!-- Cột trái -->
+      <div style="flex:0.4;min-width:0">
+        <div class="form-group"><label>Tiêu đề *</label><input class="input" id="tkt-title" placeholder="Mô tả ngắn vấn đề..."></div>
+        <div class="form-group"><label>Loại</label>
+          <select class="input" id="tkt-category">
+            <option value="issue">Báo cáo vấn đề</option>
+            <option value="technical">Hỗ trợ kỹ thuật</option>
+            <option value="info_request">Yêu cầu thông tin</option>
+            <option value="feedback">Phản hồi / Góp ý</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Ưu tiên</label>
+          <select class="input" id="tkt-priority">
+            <option value="normal">Bình thường</option>
+            <option value="low">Thấp</option>
+            <option value="high">Cao</option>
+            <option value="urgent">Khẩn cấp</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Hạn xử lý <span style="font-weight:400;color:var(--c-muted)">(tùy chọn)</span></label>
+          <input class="input" type="date" id="tkt-due-date">
+        </div>
+        <div class="form-group">
+          <label>File đính kèm</label>
+          <input class="input" type="file" id="tkt-file" style="padding:8px 12px">
+          <div style="font-size:11px;color:var(--c-muted);margin-top:4px">PDF, DOCX, PNG, JPG... Tối đa 10MB</div>
+        </div>
+      </div>
+      <!-- Cột phải: mô tả -->
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+        <div class="form-group" style="flex:1;display:flex;flex-direction:column">
+          <label>Mô tả chi tiết</label>
+          <textarea class="input" id="tkt-desc" rows="10" placeholder="Mô tả chi tiết vấn đề, bước tái hiện, thông tin liên quan..." style="flex:1;resize:none;min-height:200px"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modalCreateTicket')">Hủy</button>
+      <button class="btn btn-primary" onclick="submitCreateTicket()">🎫 Gửi ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Chi tiết ticket -->
+<div class="modal-bg" id="modalTicketDetail">
+  <div class="modal" style="max-width:860px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="tktd-title">Chi tiết ticket</div>
+        <div style="font-size:12px;color:var(--c-muted);margin-top:2px" id="tktd-meta"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalTicketDetail')">×</button>
+    </div>
+    <div class="modal-body" style="display:flex;gap:20px;align-items:flex-start">
+      <!-- Cột trái: thông tin + mô tả -->
+      <div style="flex:1;min-width:0">
+        <div id="tktd-info" style="background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+        <div style="font-size:11px;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Mô tả</div>
+        <div id="tktd-desc" style="font-size:13px;line-height:1.7;color:var(--c-text);white-space:pre-wrap;background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;max-height:180px;overflow-y:auto"></div>
+        <!-- Actions (manager only) -->
+        <div id="tktd-actions" style="display:none;padding:12px;background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--radius);margin-bottom:14px">
+          <div style="font-size:11px;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Thao tác</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="tktd-new-status" class="input" style="width:160px;padding:5px 10px;font-size:12px">
+              <option value="open">Mở</option>
+              <option value="in_progress">Đang xử lý</option>
+              <option value="resolved">Đã giải quyết</option>
+              <option value="closed">Đã đóng</option>
+            </select>
+            <button class="btn btn-primary" style="font-size:12px;padding:5px 14px" onclick="applyTicketStatus()">Cập nhật trạng thái</button>
+          </div>
+          <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+            <select id="tktd-new-priority" class="input" style="width:160px;padding:5px 10px;font-size:12px">
+              <option value="low">Ưu tiên: Thấp</option>
+              <option value="normal">Ưu tiên: Bình thường</option>
+              <option value="high">Ưu tiên: Cao</option>
+              <option value="urgent">Ưu tiên: Khẩn cấp</option>
+            </select>
+            <button class="btn" style="font-size:12px;padding:5px 14px" onclick="applyTicketPriority()">Cập nhật ưu tiên</button>
+          </div>
+          <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+            <input type="date" id="tktd-new-due-date" class="input" style="width:160px;padding:5px 10px;font-size:12px" title="Hạn xử lý">
+            <button class="btn" style="font-size:12px;padding:5px 14px" onclick="applyTicketDueDate()">Cập nhật hạn</button>
+            <button class="btn btn-danger" style="font-size:12px;padding:5px 14px;margin-left:auto" id="tktd-delete-btn" onclick="deleteTicket()" title="Chỉ Admin">🗑️ Xóa ticket</button>
+          </div>
+        </div>
+      </div>
+      <!-- Cột phải: comment thread -->
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+        <div style="font-size:11px;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Trao đổi (<span id="tktd-cmt-count">0</span>)</div>
+        <div class="comment-thread" id="tktd-comments" style="max-height:340px;overflow-y:auto;padding-right:4px"></div>
+        <div class="comment-input" id="tktd-comment-input">
+          <textarea class="input" id="tktd-new-comment" rows="2" placeholder="Nhập phản hồi..." style="resize:none"></textarea>
+          <button class="btn btn-primary" style="align-self:flex-end;font-size:12px;padding:7px 14px;white-space:nowrap" onclick="submitComment()">Gửi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts — load order: dependencies trước, app.js sau cùng -->
+<script src="/static/js/utils.js"></script>
+<script src="/static/js/api.js"></script>
+<script src="/static/js/auth.js"></script>
+<script src="/static/js/users.js"></script>
+<script src="/static/js/cvs.js"></script>
+<script src="/static/js/history.js"></script>
+<script src="/static/js/settings.js"></script>
+<script src="/static/js/payments.js"></script>
+<script src="/static/js/tasks.js"></script>
+<script src="/static/js/dashboard.js"></script>
+<script src="/static/js/tickets.js"></script>
+<script src="/static/js/app.js"></script>
+
+</body>
+</html>
