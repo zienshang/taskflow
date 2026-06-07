@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="'Segoe UI',Arial,sans-serif">
+  <rect width="1280" height="720" fill="#F7F8FA"/>
+  <!-- Topbar -->
+  <rect width="1280" height="48" fill="#fff"/>
+  <rect y="48" width="1280" height="1" fill="#E8EAF0"/>
+  <rect x="0" y="0" width="56" height="48" fill="#185FA5" rx="0"/>
+  <text x="22" y="30" fill="#fff" font-size="18" font-weight="700" text-anchor="middle">TF</text>
+  <text x="68" y="30" fill="#1A1D2E" font-size="14" font-weight="600">TaskFlow</text>
+  <!-- Nav tabs -->
+  <rect x="180" y="10" width="90" height="28" rx="6" fill="#EBF3FC"/>
+  <text x="225" y="29" fill="#185FA5" font-size="12" font-weight="600" text-anchor="middle">Dashboard</text>
+  <text x="290" y="29" fill="#6B7280" font-size="12" cursor="pointer">Tổng Task</text>
+  <text x="370" y="29" fill="#6B7280" font-size="12" cursor="pointer">Tài khoản</text>
+  <text x="450" y="29" fill="#6B7280" font-size="12" cursor="pointer">Tất cả CV</text>
+  <text x="530" y="29" fill="#6B7280" font-size="12" cursor="pointer">Tickets</text>
+  <text x="600" y="29" fill="#6B7280" font-size="12" cursor="pointer">Lịch sử</text>
+  <!-- User area -->
+  <circle cx="1140" cy="24" r="14" fill="#DBEAFE"/>
+  <text x="1140" y="29" fill="#1D4ED8" font-size="10" font-weight="700" text-anchor="middle">AD</text>
+  <text x="1162" y="22" fill="#1A1D2E" font-size="12" font-weight="500">Admin</text>
+  <text x="1162" y="34" fill="#6B7280" font-size="10">Quản trị viên</text>
+  <!-- Sidebar -->
+  <rect x="0" y="49" width="200" height="671" fill="#fff"/>
+  <rect x="0" y="49" width="200" height="1" fill="#E8EAF0"/>
+  <text x="14" y="80" fill="#6B7280" font-size="10" font-weight="600" text-transform="uppercase">Tiến độ nhân viên HR</text>
+  <!-- HR items -->
+  <circle cx="24" cy="114" r="13" fill="#E1F5EE"/>
+  <text x="24" y="119" fill="#0F6E56" font-size="9" font-weight="700" text-anchor="middle">NL</text>
+  <circle cx="24" cy="114" r="4" fill="#10b981" cx="32" cy="124"/>
+  <text x="44" y="112" fill="#1A1D2E" font-size="11" font-weight="600">Nguyễn Thị Linh</text>
+  <text x="44" y="126" fill="#10b981" font-size="9" font-weight="500">● Online</text>
+  <rect x="154" y="104" width="30" height="18" rx="9" fill="#EBF3FC"/>
+  <text x="169" y="117" fill="#185FA5" font-size="9" font-weight="600" text-anchor="middle">12 CV</text>
+  
+  <circle cx="24" cy="164" r="13" fill="#E1F5EE"/>
+  <text x="24" y="169" fill="#0F6E56" font-size="9" font-weight="700" text-anchor="middle">TV</text>
+  <circle cx="32" cy="174" r="4" fill="#E8EAF0"/>
+  <text x="44" y="162" fill="#1A1D2E" font-size="11" font-weight="600">Trần Văn Minh</text>
+  <text x="44" y="176" fill="#6B7280" font-size="9">2 giờ trước</text>
+  <rect x="154" y="154" width="30" height="18" rx="9" fill="#EBF3FC"/>
+  <text x="169" y="167" fill="#185FA5" font-size="9" font-weight="600" text-anchor="middle">8 CV</text>
+  
+  <circle cx="24" cy="214" r="13" fill="#E1F5EE"/>
+  <text x="24" y="219" fill="#0F6E56" font-size="9" font-weight="700" text-anchor="middle">PH</text>
+  <circle cx="32" cy="224" r="4" fill="#E8EAF0"/>
+  <text x="44" y="212" fill="#1A1D2E" font-size="11" font-weight="600">Phạm Hoàng</text>
+  <text x="44" y="226" fill="#6B7280" font-size="9">5 giờ trước</text>
+  <rect x="154" y="204" width="30" height="18" rx="9" fill="#EBF3FC"/>
+  <text x="169" y="217" fill="#185FA5" font-size="9" font-weight="600" text-anchor="middle">5 CV</text>
+  
+  <!-- Main content -->
+  <text x="218" y="80" fill="#1A1D2E" font-size="14" font-weight="600">Dashboard</text>
+  
+  <!-- Stats cards -->
+  <rect x="218" y="100" width="200" height="68" rx="10" fill="#fff" stroke="#E8EAF0"/>
+  <text x="234" y="122" fill="#6B7280" font-size="11">Tổng task</text>
+  <text x="234" y="152" fill="#185FA5" font-size="24" font-weight="700">42</text>
+  
+  <rect x="434" y="100" width="200" height="68" rx="10" fill="#fff" stroke="#E8EAF0"/>
+  <text x="450" y="122" fill="#6B7280" font-size="11">Đang thực hiện</text>
+  <text x="450" y="152" fill="#854F0B" font-size="24" font-weight="700">18</text>
+  
+  <rect x="650" y="100" width="200" height="68" rx="10" fill="#fff" stroke="#E8EAF0"/>
+  <text x="666" y="122" fill="#6B7280" font-size="11">Tổng CV nhận được</text>
+  <text x="666" y="152" fill="#0F6E56" font-size="24" font-weight="700">156</text>
+  
+  <rect x="866" y="100" width="200" height="68" rx="10" fill="#fff" stroke="#E8EAF0"/>
+  <text x="882" y="122" fill="#6B7280" font-size="11">HR online</text>
+  <text x="882" y="152" fill="#0F6E56" font-size="24" font-weight="700">1 <tspan fill="#6B7280" font-size="11">/ 3</tspan></text>
+  
+  <!-- Ticket mini panel -->
+  <rect x="218" y="190" width="848" height="50" rx="10" fill="#fff" stroke="#E8EAF0"/>
+  <text x="236" y="218" fill="#1A1D2E" font-size="12" font-weight="600">🎫 Ticket hỗ trợ</text>
+  <text x="600" y="218" fill="#185FA5" font-size="16" font-weight="700" text-anchor="middle">5</text>
+  <text x="600" y="232" fill="#6B7280" font-size="10" text-anchor="middle">Mở</text>
+  <text x="680" y="218" fill="#854F0B" font-size="16" font-weight="700" text-anchor="middle">3</text>
+  <text x="680" y="232" fill="#6B7280" font-size="10" text-anchor="middle">Đang xử lý</text>
+  <text x="760" y="218" fill="#0F6E56" font-size="16" font-weight="700" text-anchor="middle">12</text>
+  <text x="760" y="232" fill="#6B7280" font-size="10" text-anchor="middle">Đã giải quyết</text>
+  
+  <!-- Task table -->
+  <rect x="218" y="262" width="848" height="280" rx="10" fill="#fff" stroke="#E8EAF0"/>
+  <rect x="218" y="262" width="848" height="42" rx="10" fill="#F7F8FA"/>
+  <text x="240" y="288" fill="#6B7280" font-size="10" font-weight="600">TASK</text>
+  <text x="490" y="288" fill="#6B7280" font-size="10" font-weight="600">HR</text>
+  <text x="580" y="288" fill="#6B7280" font-size="10" font-weight="600">NHẬN</text>
+  <text x="650" y="288" fill="#6B7280" font-size="10" font-weight="600">CV</text>
+  <text x="730" y="288" fill="#6B7280" font-size="10" font-weight="600">HOA HỒNG</text>
+  <text x="850" y="288" fill="#6B7280" font-size="10" font-weight="600">TT ỨNG VIÊN</text>
+  <text x="970" y="288" fill="#6B7280" font-size="10" font-weight="600">THANH TOÁN</text>
+  
+  <!-- Row 1 -->
+  <rect x="218" y="304" width="848" height="48" fill="#fff"/>
+  <rect x="218" y="304" width="4" height="48" fill="#0F6E56"/>
+  <rect x="240" y="314" width="58" height="16" rx="4" fill="#F3F4F6"/>
+  <text x="244" y="326" fill="#6B7280" font-size="9" font-family="monospace">HR-001</text>
+  <text x="240" y="340" fill="#1A1D2E" font-size="12" font-weight="500">Tuyển Senior Developer</text>
+  <text x="490" y="333" fill="#185FA5" font-size="11">Nguyễn Thị Linh</text>
+  <text x="585" y="333" fill="#0F6E56" font-size="10" font-weight="600">✅ Đã nhận</text>
+  <text x="655" y="333" fill="#854F0B" font-size="9" font-weight="600">4 CV</text>
+  <text x="735" y="333" fill="#0F6E56" font-size="11" font-weight="600">5.000.000 VND</text>
+  <rect x="850" y="322" width="60" height="16" rx="8" fill="#FDF3E3"/>
+  <text x="880" y="334" fill="#854F0B" font-size="9" font-weight="600" text-anchor="middle">Đang thử việc</text>
+  
+  <!-- Row 2 -->
+  <rect x="218" y="352" width="848" height="48" fill="#fff"/>
+  <rect x="218" y="352" width="4" height="48" fill="#185FA5"/>
+  <rect x="240" y="362" width="58" height="16" rx="4" fill="#F3F4F6"/>
+  <text x="244" y="374" fill="#6B7280" font-size="9" font-family="monospace">HR-002</text>
+  <text x="240" y="388" fill="#1A1D2E" font-size="12" font-weight="500">Tuyển UI/UX Designer</text>
+  <text x="490" y="381" fill="#185FA5" font-size="11">Trần Văn Minh</text>
+  <text x="585" y="381" fill="#0F6E56" font-size="10" font-weight="600">✅ Đã nhận</text>
+  <text x="655" y="381" fill="#854F0B" font-size="9" font-weight="600">3 CV</text>
+  <text x="735" y="381" fill="#0F6E56" font-size="11" font-weight="600">3.000.000 VND</text>
+  <rect x="850" y="370" width="60" height="16" rx="8" fill="#EBF3FC"/>
+  <text x="880" y="382" fill="#185FA5" font-size="9" font-weight="600" text-anchor="middle">Đã liên hệ</text>
+  
+  <!-- Row 3 -->
+  <rect x="218" y="400" width="848" height="48" fill="#fff"/>
+  <rect x="218" y="400" width="4" height="48" fill="#F59E0B"/>
+  <rect x="240" y="410" width="58" height="16" rx="4" fill="#F3F4F6"/>
+  <text x="244" y="422" fill="#6B7280" font-size="9" font-family="monospace">HR-003</text>
+  <text x="240" y="436" fill="#1A1D2E" font-size="12" font-weight="500">Tuyển Product Manager</text>
+  <text x="490" y="429" fill="#185FA5" font-size="11">Phạm Hoàng</text>
+  <rect x="575" y="418" width="50" height="16" rx="8" fill="#F3F4F6"/>
+  <text x="600" y="430" fill="#6B7280" font-size="9" font-weight="600" text-anchor="middle">⏳ Chờ</text>
+  <text x="655" y="429" fill="#6B7280" font-size="9" font-weight="600">0 CV</text>
+  <text x="735" y="429" fill="#0F6E56" font-size="11" font-weight="600">4.000.000 VND</text>
+  <rect x="850" y="418" width="50" height="16" rx="8" fill="#F3F4F6"/>
+  <text x="875" y="430" fill="#6B7280" font-size="9" font-weight="600" text-anchor="middle">Chờ nhận</text>
+  
+  <!-- Bottom bar -->
+  <rect x="0" y="700" width="1280" height="20" fill="#F7F8FA"/>
+</svg>
